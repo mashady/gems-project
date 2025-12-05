@@ -64,13 +64,6 @@ jobs:
           source: "."
           target: "~/gem-store"
           strip_components: 0
-          exclude:
-            - ".git"
-            - "node_modules"
-            - "vendor"
-            - ".env"
-            - ".env.*"
-            - "!.envs"
 
       - name: Deploy on EC2
         uses: appleboy/ssh-action@master
