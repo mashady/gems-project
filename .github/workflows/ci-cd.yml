@@ -12,7 +12,8 @@ env:
 jobs:
   test:
     name: Run Tests
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
+    labels: [linux, x64, docker]
     
     steps:
       - name: Checkout code
@@ -44,8 +45,9 @@ jobs:
           docker-compose -f docker-compose.test.yml down -v
 
   deploy:
-    name: Deploy to EC2
-    runs-on: ubuntu-latest
+    name: Deploy to Production
+    runs-on: self-hosted
+    labels: [linux, x64, docker]
     needs: test
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment: production
@@ -54,36 +56,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Copy files to EC2
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-          source: "."
-          target: "~/gem-store"
-          strip_components: 0
-
-      - name: Deploy on EC2
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-          script: |
-            cd ~/gem-store
-            
-            # Stop existing containers
-            docker-compose -f docker-compose.prod.yml down || true
-            
-            # Build and start containers
-            docker-compose -f docker-compose.prod.yml up -d --build
-            
-            # Clean up old images
-            docker image prune -f
-            
-            echo "✅ Deployment complete!"
-            docker-compose -f docker-compose.prod.yml ps
+      - name: Deploy application
+        run: |
+          # Create deployment directory if it doesn't exist
+          mkdir -p ~/gem-store
+          
+          # Copy files from workspace to deployment directory
+          rsync -av --exclude='.git' --exclude='node_modules' --exclude='vendor' \
+            ${{ github.workspace }}/ ~/gem-store/
+          
+          cd ~/gem-store
+          
+          # Stop existing containers
+          docker-compose -f docker-compose.prod.yml down || true
+          
+          # Build and start containers
+          docker-compose -f docker-compose.prod.yml up -d --build
+          
+          # Clean up old images
+          docker image prune -f
+          
+          echo "✅ Deployment complete!"
+          docker-compose -f docker-compose.prod.yml ps
 
