@@ -1,27 +1,22 @@
-# Frontend
-frontend/node_modules
-frontend/dist
-frontend/build
-frontend/.next
-frontend/.nuxt
-frontend/.pnpm-store
-
-# Backend
-backend/vendor
-backend/node_modules
-backend/storage/logs/*
-backend/storage/framework/cache/*
-backend/storage/framework/sessions/*
-backend/storage/framework/views/*
-
-# General
+node_modules
+**/node_modules
+npm-debug.log
 .git
 .gitignore
 .env
 .env.*
+!.envs
+.vscode
+.idea
 *.log
 .DS_Store
-README.md
-docker-compose.yml
-Dockerfile
-
+coverage
+.nyc_output
+dist
+build
+*.swp
+*.swo
+*~
+frontend/node_modules
+frontend/dist
+frontend/build

@@ -1,0 +1,21 @@
+FROM node:20
+
+WORKDIR /app
+
+# Copy package files
+COPY frontend/package*.json ./
+
+# Remove pnpm-lock.yaml if it exists to avoid conflicts
+RUN rm -f pnpm-lock.yaml || true
+
+# Install dependencies including dev
+RUN npm install --legacy-peer-deps || npm install
+
+# Copy source files
+COPY frontend/ ./
+
+# Install Vitest if not present
+RUN npm install --save-dev vitest @vitest/ui || true
+
+CMD ["npm", "run", "test", "--", "--run"]
+

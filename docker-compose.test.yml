@@ -1,0 +1,55 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile.test
+    container_name: gem-backend-test
+    restart: "no"
+    environment:
+      - APP_ENV=testing
+      - APP_DEBUG=false
+    env_file:
+      - .envs/.env.test
+    depends_on:
+      - mysql
+    networks:
+      - gem-test-network
+    command: >
+      sh -c "
+        php artisan config:clear &&
+        php artisan cache:clear &&
+        php artisan migrate --force &&
+        php artisan test
+      "
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile.test
+    container_name: gem-frontend-test
+    restart: "no"
+    environment:
+      - NODE_ENV=test
+      - VITE_API_URL=http://backend:8000
+    networks:
+      - gem-test-network
+    command: npm run test
+
+  mysql:
+    image: mysql:8
+    container_name: gem-mysql-test
+    restart: "no"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-test_root}
+      MYSQL_DATABASE: ${DB_DATABASE:-gems_test}
+      MYSQL_USER: ${DB_USERNAME:-test}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-test}
+    networks:
+      - gem-test-network
+    tmpfs:
+      - /var/lib/mysql
+
+networks:
+  gem-test-network:
+    driver: bridge
+

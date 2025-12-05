@@ -1,0 +1,62 @@
+# Stage 1: Build stage
+FROM php:8.4-fpm AS builder
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git curl zip unzip libpng-dev \
+    libonig-dev libxml2-dev libzip-dev \
+    libssl-dev libcurl4-openssl-dev
+
+# Install PHP extensions
+RUN docker-php-ext-install pdo pdo_mysql gd mbstring xml zip opcache
+
+# Install Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Set working dir
+WORKDIR /var/www/html
+
+# Copy composer files
+COPY backend/composer.json backend/composer.lock* ./
+
+# Install production dependencies without scripts (scripts need Laravel to be set up)
+RUN composer install --no-dev --no-interaction --prefer-dist --no-scripts --no-autoloader
+
+# Copy source files
+COPY backend/ .
+
+# Generate autoloader and run scripts now that Laravel is available
+RUN composer dump-autoload --optimize && \
+    composer run-script post-autoload-dump || true
+
+# Stage 2: Production stage
+FROM php:8.4-fpm
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    libpng-dev libonig-dev libxml2-dev libzip-dev \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install PHP extensions
+RUN docker-php-ext-install pdo pdo_mysql gd mbstring xml zip opcache
+
+# Copy from builder
+COPY --from=builder /var/www/html /var/www/html
+
+# Set permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html/storage
+
+# Configure PHP for production
+RUN echo "opcache.enable=1" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.memory_consumption=256" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.interned_strings_buffer=16" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.max_accelerated_files=20000" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.validate_timestamps=0" >> /usr/local/etc/php/conf.d/opcache.ini
+
+WORKDIR /var/www/html
+
+EXPOSE 9000
+
+CMD ["php-fpm"]
+

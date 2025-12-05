@@ -1,0 +1,39 @@
+FROM php:8.4-fpm
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git curl zip unzip libpng-dev \
+    libonig-dev libxml2-dev libzip-dev \
+    libssl-dev libcurl4-openssl-dev \
+    nodejs npm
+
+# Install PHP extensions
+RUN docker-php-ext-install pdo pdo_mysql gd mbstring xml zip opcache
+
+# Install Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Set working dir
+WORKDIR /var/www/html
+
+# Copy composer files
+COPY backend/composer.json backend/composer.lock* ./
+
+# Install dependencies without scripts (scripts need Laravel to be set up)
+RUN composer install --no-interaction --prefer-dist --no-scripts --no-autoloader
+
+# Copy source files
+COPY backend/ .
+
+# Generate autoloader and run scripts now that Laravel is available
+RUN composer dump-autoload --optimize && \
+    composer run-script post-autoload-dump || true
+
+# Set permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html/storage
+
+EXPOSE 8000
+
+CMD php artisan serve --host=0.0.0.0 --port=8000
+

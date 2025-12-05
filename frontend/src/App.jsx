@@ -11,6 +11,7 @@ function App() {
       <div>
         <h1>Hello World</h1>
         <p>This is a test, created by muhammed samir mashady</p>
+        <p>This is a test, created by muhammed samir mashady</p>
         <a href="https://vite.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />
         </a>
