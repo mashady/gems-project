@@ -13,7 +13,6 @@ jobs:
   test:
     name: Run Tests
     runs-on: self-hosted
-    labels: [linux, x64, docker]
     
     steps:
       - name: Checkout code
@@ -47,7 +46,6 @@ jobs:
   deploy:
     name: Deploy to Production
     runs-on: self-hosted
-    labels: [linux, x64, docker]
     needs: test
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment: production
