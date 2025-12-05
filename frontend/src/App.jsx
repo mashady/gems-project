@@ -10,7 +10,7 @@ function App() {
   return (
     <>
       <div>
-        <h1>Hello World.......</h1>
+        <h1>Hello World........</h1>
         <p>This is a test, created by muhammed samir mashady</p>
         <p>This is a test, created by king of the jungle</p>
         <a href="https://vite.dev" target="_blank">
