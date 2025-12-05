@@ -14,6 +14,8 @@ services:
       - mysql
     networks:
       - gem-prod-network
+    ports:
+      - "9000:9000"
     command: >
       sh -c "
         php artisan config:cache &&
@@ -22,19 +24,6 @@ services:
         php artisan migrate --force &&
         php-fpm
       "
-
-  frontend:
-    build:
-      context: .
-      dockerfile: frontend/Dockerfile.prod
-    container_name: gem-frontend-prod
-    restart: always
-    ports:
-      - "80:80"
-    networks:
-      - gem-prod-network
-    depends_on:
-      - backend
 
   mysql:
     image: mysql:8
@@ -56,12 +45,13 @@ services:
     container_name: gem-nginx-prod
     restart: always
     ports:
+      - "80:80"
       - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./frontend-dist:/usr/share/nginx/html:ro
     depends_on:
-      - frontend
       - backend
     networks:
       - gem-prod-network
