@@ -67,13 +67,17 @@ php artisan key:generate
 
 The GitHub Actions workflow (`.github/workflows/ci-cd.yml`) automatically:
 1. Runs tests on push/PR
-2. Builds Docker images on successful tests
-3. Pushes images to AWS ECR
-4. Deploys to AWS ECS/Fargate (main branch only)
+2. Copies code to EC2 server (main branch only)
+3. Builds and deploys Docker containers on EC2
 
 ### Required GitHub Secrets:
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
+- `EC2_HOST` - Your EC2 instance public IP or domain
+- `EC2_SSH_KEY` - Your EC2 SSH private key (entire .pem file content)
+
+### EC2 Setup Requirements:
+- Docker and Docker Compose installed on EC2
+- `.envs/.env.prod` file created on EC2 with production environment variables
+- Security Group configured to allow SSH (port 22) and HTTP/HTTPS (ports 80, 443)
 
 ## Commands
 
