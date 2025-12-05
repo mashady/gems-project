@@ -1,0 +1,27 @@
+# Frontend
+frontend/node_modules
+frontend/dist
+frontend/build
+frontend/.next
+frontend/.nuxt
+frontend/.pnpm-store
+
+# Backend
+backend/vendor
+backend/node_modules
+backend/storage/logs/*
+backend/storage/framework/cache/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+
+# General
+.git
+.gitignore
+.env
+.env.*
+*.log
+.DS_Store
+README.md
+docker-compose.yml
+Dockerfile
+
