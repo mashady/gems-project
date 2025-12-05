@@ -36,16 +36,11 @@ jobs:
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL || 'http://localhost:8000' }}
 
-      - name: Upload dist to EC2
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: 22
-          source: "frontend/dist"
-          target: "~/gem-store/frontend-dist"
-          strip_components: 2
+      - name: Copy dist to deployment directory
+        run: |
+          mkdir -p ~/gem-store/frontend-dist
+          cp -r frontend/dist/* ~/gem-store/frontend-dist/
+          echo "✅ Frontend dist copied to ~/gem-store/frontend-dist"
 
   deploy:
     name: Deploy Backend and Database
